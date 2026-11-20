@@ -36,7 +36,7 @@ Pedidos, con su sesión de siempre.
 
 1. **Los tres paneles con su resumen.** Llevar a `main` las ramas que agregan
    el resumen en `panel-de-cajas` y `panel-de-rastreo`. En Pedidos, aplicar la
-   migración `0057_resumen_para_el_panel_madre.sql` y desplegar la función
+   migración `0058_resumen_para_el_panel_madre.sql` y desplegar la función
    `resumen-madre` con `verify_jwt: false` (ver su README).
 2. **Tres claves**, una por panel: `openssl rand -base64 32` tres veces.
    - En Vercel de Producción: `RESUMEN_SECRETO` = clave 1.

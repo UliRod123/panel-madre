@@ -12,7 +12,7 @@ import "server-only";
    contesta, Producción y Pedidos se ven igual y Rastreo dice qué pasó.
 
    Los tipos de abajo repiten lo que manda cada panel (su `src/lib/resumen.ts`
-   y la migración 0057 de Pedidos). Si allá cambia algo, se cambia aquí.
+   y la migración 0058 de Pedidos). Si allá cambia algo, se cambia aquí.
    ========================================================================== */
 
 export type ResumenProduccion = {
