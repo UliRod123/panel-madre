@@ -1,0 +1,27 @@
+// Panel madre: Producción, Rastreo y Pedidos en una sola pantalla.
+// Esta base solo guarda quién puede entrar. Los datos del día se leen de cada
+// panel (cada uno con su propia base) a través de su resumen protegido.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Quien entra al panel madre con su usuario y su PIN.
+model Cuenta {
+  id               String    @id @default(cuid())
+  nombre           String
+  usuario          String    @unique // clave corta de acceso, ej. "meche"
+  pinHash          String
+  /// El dueño: además de ver, da de alta cuentas, cambia PIN y las desactiva.
+  esDueno          Boolean   @default(false)
+  activa           Boolean   @default(true)
+  /// Freno para quien prueba PIN tras PIN.
+  intentosFallidos Int       @default(0)
+  bloqueadaHasta   DateTime?
+  creadaEn         DateTime  @default(now())
+}

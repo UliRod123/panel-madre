@@ -1,0 +1,942 @@
+@import "tailwindcss";
+
+/* Control de Producción — sistema visual del panel. */
+@theme {
+  --font-sans:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  --color-marca-50: #eef7fc;
+  --color-marca-100: #d9edf8;
+  --color-marca-200: #b8dff2;
+  --color-marca-300: #86c9e9;
+  --color-marca-400: #58add9;
+  --color-marca-500: #247dbb;
+  --color-marca-600: #1c6aa5;
+  --color-marca-700: #195687;
+  --color-marca-800: #163f63;
+  --color-marca-900: #10283f;
+  --color-marca-950: #0b1e31;
+
+  --color-turquesa-50: #ebfbfa;
+  --color-turquesa-100: #cef6f3;
+  --color-turquesa-200: #a2ebe7;
+  --color-turquesa-300: #68d9d5;
+  --color-turquesa-400: #35c0bd;
+  --color-turquesa-500: #149f9e;
+  --color-turquesa-600: #0a8587;
+  --color-turquesa-700: #0b696d;
+  --color-turquesa-800: #0d5357;
+  --color-turquesa-900: #0b4044;
+
+  /* Urgencia es distinta de error/incidencia. */
+  --color-urgencia: #d1594e;
+  --color-urgencia-fuerte: #a63d35;
+
+  --color-torre-900: #0c2033;
+  --color-torre-800: #102b43;
+  --color-torre-700: #153a58;
+
+  --shadow-panel: 0 18px 48px -32px rgb(13 35 55 / 0.38);
+  --shadow-flotante: 0 16px 34px -24px rgb(13 35 55 / 0.48);
+  --ease-producto: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    accent-color: var(--color-turquesa-600);
+
+    /*
+      Fuera de `@theme` a propósito: estas no generan clases de Tailwind, se
+      leen con `var()` desde estilos en línea y desde utilidades de este
+      archivo. Dentro de `@theme`, Tailwind solo emite las que alguna clase usa,
+      y `--ease-resorte` se perdía: los controles que la pedían (el deslizador
+      de entregar, el borrado con gesto) se quedaban sin animación.
+    */
+    --ease-resorte: cubic-bezier(0.34, 1.4, 0.64, 1);
+    --lienzo: #f2f5f7;
+    --borde-suave: #e3e9ee;
+    --duracion-corta: 160ms;
+    --duracion-media: 260ms;
+  }
+
+  html {
+    min-width: 320px;
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[#f2f5f7] text-slate-900 antialiased;
+    font-family: var(--font-sans);
+    min-height: 100dvh;
+  }
+
+  ::selection {
+    background: var(--color-turquesa-200);
+    color: var(--color-marca-950);
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+    font-size: max(1rem, 16px);
+  }
+
+  button,
+  summary,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+
+  a {
+    @apply text-marca-700 underline-offset-4;
+  }
+
+  a:hover {
+    @apply text-marca-800;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-turquesa-700);
+    outline-offset: 3px;
+  }
+
+  .panel-navegacion :focus-visible {
+    outline-color: var(--color-turquesa-200);
+  }
+
+  [aria-disabled="true"],
+  :disabled {
+    cursor: not-allowed;
+  }
+}
+
+/* Superficies y contenido ------------------------------------------------- */
+@utility tarjeta {
+  @apply border bg-white;
+  border-radius: var(--tarjeta-radio, var(--radius-2xl));
+  border-color: var(--tarjeta-borde, #dfe6eb);
+  /* Componer la sombra conserva los aros de estado que añade cada tarjeta. */
+  --tw-shadow: var(--tarjeta-sombra, 0 0 #0000);
+  box-shadow: var(--tarjeta-sombra-original, var(--shadow-panel)),
+    var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000),
+    var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+@utility panel-suave {
+  @apply border;
+  border-radius: var(--panel-suave-radio, var(--radius-2xl));
+  border-color: var(--panel-suave-borde, color-mix(in oklab, var(--color-slate-200) 80%, transparent));
+  background-color: var(--panel-suave-fondo, color-mix(in oklab, var(--color-slate-50) 80%, transparent));
+  @apply shadow-[var(--panel-suave-sombra,0_0_#0000)];
+}
+
+@utility campo {
+  @apply min-h-11 w-full border bg-white px-3.5 py-2.5 text-slate-900 outline-none
+    shadow-[var(--campo-sombra,0_1px_2px_rgb(15_35_55/0.04))]
+    placeholder:text-slate-400 focus:ring-4
+    focus:ring-[var(--campo-foco-aro,var(--color-turquesa-100))]
+    disabled:bg-slate-100 disabled:text-slate-500;
+  border-radius: var(--campo-radio, var(--radius-xl));
+  border-color: var(--campo-borde, var(--color-slate-300));
+  transition:
+    border-color 150ms var(--ease-producto),
+    box-shadow 150ms var(--ease-producto),
+    background-color 150ms var(--ease-producto);
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: var(--campo-borde-hover, var(--color-slate-400));
+    }
+  }
+
+  &:focus {
+    border-color: var(--campo-borde-foco, var(--color-turquesa-600));
+    outline: var(--campo-foco-outline, none);
+    outline-offset: var(--campo-foco-offset, 0px);
+  }
+}
+
+@utility rotulo {
+  @apply mb-1.5 block text-sm;
+  color: var(--rotulo-color, var(--color-slate-700));
+  font-weight: var(--rotulo-peso, 600);
+}
+
+@utility titulo-seccion {
+  @apply text-xs uppercase;
+  color: var(--titulo-seccion-color, var(--color-slate-500));
+  font-weight: var(--titulo-seccion-peso, 700);
+  letter-spacing: var(--titulo-seccion-tracking, 0.11em);
+}
+
+@utility insignia {
+  @apply inline-flex items-center gap-1 rounded-full whitespace-nowrap ring-1 ring-inset
+    shadow-[var(--insignia-sombra,0_0_#0000)];
+  min-height: var(--insignia-alto, 1.5rem);
+  padding: var(--insignia-relleno-y, 0.125rem) var(--insignia-relleno-x, 0.625rem);
+  font-size: var(--insignia-letra, var(--text-xs));
+  line-height: var(--insignia-interlineado, var(--tw-leading, var(--text-xs--line-height)));
+  font-weight: var(--insignia-peso, 700);
+}
+
+@utility tabla-panel {
+  @apply w-full min-w-[680px] text-left text-sm;
+}
+
+/*
+  `backwards` y no `both`: con `both` la animación se queda "puesta" para
+  siempre, y un elemento con una animación de `transform` en efecto se vuelve
+  el marco de todo lo `fixed` que lleva dentro. Los avisos flotantes salían
+  al fondo de la página en vez de abajo de la ventana. Con `backwards` el
+  bloque espera en su estado inicial durante el retraso y, al terminar, la
+  animación deja de existir.
+*/
+@utility entrada-panel {
+  animation: entrada-panel 260ms var(--ease-producto) backwards;
+}
+
+/*
+  Entrada escalonada de los bloques de una pantalla: cada uno llega 45 ms
+  después del anterior (`--orden`, que pone `escalon()`), con tope para que
+  una lista larga no tarde en terminar de aparecer.
+*/
+@utility aparecer {
+  animation: entrada-panel var(--duracion-media) var(--ease-producto) backwards;
+  animation-delay: calc(min(var(--orden, 0), 8) * 45ms);
+}
+
+/* Una tarjeta que se abre o se toca: se levanta un poco al pasar el ratón. */
+@utility tarjeta-viva {
+  transition:
+    transform var(--duracion-corta) var(--ease-producto),
+    box-shadow var(--duracion-corta) var(--ease-producto),
+    border-color var(--duracion-corta) var(--ease-producto);
+
+  &:hover {
+    transform: var(--tarjeta-transformar-hover, translateY(-2px));
+    border-color: var(--tarjeta-borde-hover, var(--color-marca-200));
+    --tw-shadow: var(--tarjeta-sombra-hover, 0 0 #0000);
+    box-shadow: var(--tarjeta-sombra-hover-compuesta, 0 22px 44px -30px rgb(13 35 55 / 0.45));
+  }
+}
+
+/* Fila de lista dentro de una tarjeta: densa, con su propio realce al pasar. */
+@utility fila {
+  @apply flex items-center gap-3 px-4 py-3 no-underline sm:px-5;
+  transition: background-color var(--duracion-corta) var(--ease-producto);
+
+  &:hover {
+    background: var(--fila-fondo-hover, rgb(241 245 249 / 0.7));
+  }
+}
+
+/* Botones ----------------------------------------------------------------
+
+   Una sola familia de botones para las dos apps, con la medida puesta en
+   variables. Sin nada definido valen lo de siempre —lo que usa el chofer en la
+   calle: grandes, con el icono en su cuadrito—. El panel de oficina las
+   redefine en `.panel-shell` (abajo): más bajos, el icono suelto y sin
+   saltitos al pasar el ratón, que en una pantalla con cuarenta botones se
+   sienten como ruido. Se hace con variables y no con reglas encima para que
+   las clases de color de cada botón (`text-rose-800`, `w-full`…) sigan
+   mandando igual que antes.
+*/
+@utility capsula {
+  @apply relative inline-flex flex-none items-center justify-center overflow-hidden
+    border no-underline shadow-sm disabled:pointer-events-none;
+  min-height: var(--capsula-alto, 2.75rem);
+  gap: var(--capsula-hueco, 0.625rem);
+  padding: var(--capsula-relleno-y, 0.625rem) var(--capsula-relleno-x, 1rem);
+  border-radius: var(--capsula-radio, 0.75rem);
+  font-size: var(--capsula-letra, 15px);
+  font-weight: var(--capsula-peso, 700);
+  letter-spacing: var(--capsula-tracking, 0);
+  background-image: var(--capsula-fondo-imagen, none);
+  --tw-shadow: var(--capsula-sombra-variante, var(--capsula-sombra, var(--shadow-sm)));
+  transition:
+    transform 150ms var(--ease-producto),
+    border-color 150ms var(--ease-producto),
+    background-color 150ms var(--ease-producto),
+    color 150ms var(--ease-producto),
+    box-shadow 150ms var(--ease-producto);
+
+  &:not(:disabled):hover {
+    transform: translateY(var(--capsula-elevar, -1px));
+    --tw-shadow: var(--capsula-sombra-variante-hover,
+      var(--capsula-sombra-hover, var(--capsula-sombra-variante, var(--capsula-sombra, var(--shadow-sm)))));
+  }
+
+  &:not(:disabled):active {
+    transform: translateY(0) scale(var(--capsula-escala-activa, 0.975));
+    --tw-shadow: var(--capsula-sombra-activa,
+      var(--capsula-sombra-variante-hover, var(--capsula-sombra-variante, var(--capsula-sombra, var(--shadow-sm)))));
+  }
+
+  &:disabled {
+    border-color: var(--capsula-borde-deshabilitado, var(--color-slate-200));
+    background-color: var(--capsula-fondo-deshabilitado, var(--color-slate-100));
+    background-image: var(--capsula-imagen-deshabilitada, none);
+    color: var(--capsula-color-deshabilitado, var(--color-slate-400));
+    --tw-shadow: var(--capsula-sombra-deshabilitada, 0 0 #0000);
+  }
+}
+
+@utility capsula-chip {
+  @apply flex flex-none items-center justify-center;
+  width: var(--chip-tam, 2rem);
+  height: var(--chip-tam, 2rem);
+  border-radius: var(--chip-radio, 0.5rem);
+  background: var(--chip-fondo, rgb(255 255 255 / 0.16));
+}
+
+@utility capsula-primaria {
+  @apply text-white;
+  border-color: var(--capsula-borde-primaria, var(--color-marca-700));
+  background-color: var(--capsula-fondo-primaria, var(--color-marca-800));
+  --capsula-sombra-variante: var(--capsula-sombra-primaria, 0 12px 24px -18px rgb(16 40 63 / 0.9));
+
+  &:not(:disabled):hover {
+    @apply text-white;
+    border-color: var(--capsula-borde-primaria-hover, var(--color-marca-600));
+    background-color: var(--capsula-fondo-primaria-hover, var(--color-marca-700));
+    --capsula-sombra-variante-hover: var(--capsula-sombra-primaria-hover, 0 16px 28px -18px rgb(16 40 63 / 0.95));
+  }
+}
+
+@utility capsula-urgente {
+  @apply text-white;
+  border-color: var(--capsula-borde-urgente, var(--color-urgencia-fuerte));
+  background-color: var(--capsula-fondo-urgente, var(--color-urgencia));
+  --capsula-sombra-variante: var(--capsula-sombra-urgente, 0 12px 24px -18px rgb(166 61 53 / 0.9));
+
+  &:not(:disabled):hover {
+    @apply text-white;
+    background-color: var(--capsula-fondo-urgente-hover, var(--color-urgencia-fuerte));
+  }
+}
+
+@utility capsula-exito {
+  @apply text-white;
+  border-color: var(--capsula-borde-exito, var(--color-emerald-700));
+  background-color: var(--capsula-fondo-exito, var(--color-emerald-700));
+
+  &:not(:disabled):hover {
+    @apply text-white;
+    background-color: var(--capsula-fondo-exito-hover, var(--color-emerald-800));
+  }
+}
+
+@utility capsula-peligro {
+  @apply text-white;
+  border-color: var(--capsula-borde-peligro, var(--color-rose-700));
+  background-color: var(--capsula-fondo-peligro, var(--color-rose-700));
+
+  &:not(:disabled):hover {
+    @apply text-white;
+    background-color: var(--capsula-fondo-peligro-hover, var(--color-rose-800));
+  }
+}
+
+@utility capsula-posponer {
+  @apply text-white;
+  border-color: var(--capsula-borde-posponer, var(--color-violet-700));
+  background-color: var(--capsula-fondo-posponer, var(--color-violet-700));
+
+  &:not(:disabled):hover {
+    @apply text-white;
+    background-color: var(--capsula-fondo-posponer-hover, var(--color-violet-800));
+  }
+}
+
+@utility capsula-normal {
+  @apply text-slate-800;
+  background-color: var(--capsula-fondo-normal, #fff);
+  background-image: var(--capsula-imagen-normal, none);
+  border-color: var(--capsula-borde-normal, var(--color-slate-300));
+  --capsula-sombra-variante: var(--capsula-sombra-normal, var(--shadow-sm));
+
+  &:not(:disabled):hover {
+    border-color: var(--capsula-borde-normal-hover, var(--color-marca-300));
+    background-color: var(--capsula-fondo-normal-hover, var(--color-marca-50));
+    background-image: var(--capsula-imagen-normal-hover, none);
+    color: var(--capsula-color-normal-hover, var(--color-marca-900));
+    --capsula-sombra-variante-hover: var(--capsula-sombra-normal-hover, var(--capsula-sombra-variante));
+  }
+
+  .capsula-chip {
+    background: var(--chip-fondo-normal, var(--color-marca-50));
+    color: var(--chip-color-normal, var(--color-marca-700));
+  }
+}
+
+@utility capsula-fantasma {
+  @apply border-transparent bg-transparent text-current shadow-none;
+  background-image: none;
+  --capsula-sombra-variante: 0 0 #0000;
+  --capsula-sombra-variante-hover: 0 0 #0000;
+  --capsula-sombra-activa: var(--capsula-presion-fantasma, 0 0 #0000);
+
+  &:not(:disabled):hover {
+    @apply text-current;
+    background-color: var(--capsula-fondo-fantasma-hover, rgb(255 255 255 / 0.1));
+  }
+}
+
+@utility capsula-xl {
+  @apply w-full;
+  min-height: var(--capsula-xl-alto, 60px);
+  border-radius: var(--capsula-xl-radio, var(--radius-2xl));
+  padding: var(--capsula-xl-relleno-y, 0.75rem) var(--capsula-xl-relleno-x, 1.25rem);
+  font-size: var(--capsula-xl-letra, 17px);
+
+  .capsula-chip {
+    width: var(--chip-tam-xl, 2.5rem);
+    height: var(--chip-tam-xl, 2.5rem);
+    border-radius: var(--chip-radio-xl, var(--radius-xl));
+  }
+}
+
+@utility capsula-sm {
+  min-height: var(--capsula-sm-alto, 2.25rem);
+  gap: var(--capsula-sm-hueco, 0.5rem);
+  padding: var(--capsula-sm-relleno-y, 0.375rem) var(--capsula-sm-relleno-x, 0.75rem);
+  border-radius: var(--capsula-sm-radio, 0.5rem);
+  font-size: var(--capsula-sm-letra, 13px);
+
+  .capsula-chip {
+    width: var(--chip-tam-sm, 1.75rem);
+    height: var(--chip-tam-sm, 1.75rem);
+    border-radius: var(--chip-radio-sm, 0.375rem);
+  }
+}
+
+/* Layouts reutilizables --------------------------------------------------- */
+.panel-shell {
+  min-height: 100dvh;
+  /* Tokens heredables: las utilidades conservan la última palabra sobre medidas,
+     colores y composición. Sin este contenedor, los defaults son los del chofer. */
+  --duracion-corta: 150ms;
+  --panel-radio-superficie: 16px;
+  --panel-radio-control: 10px;
+  --panel-radio-compacto: 8px;
+  --panel-hairline: rgb(22 63 99 / 0.14);
+  --panel-foco-separacion: #fff;
+  --panel-foco-color: var(--color-turquesa-700);
+  --navegacion-fondo:
+    radial-gradient(ellipse at 100% 0%, rgb(53 192 189 / 0.10), transparent 45%),
+    linear-gradient(165deg, #132f48, #0b1e31 75%);
+  --logo-fondo: linear-gradient(180deg, #fff, #f1f6fa);
+  --logo-sombra: inset 0 1px 0 #fff, 0 2px 4px rgb(0 0 0 / 0.12), 0 8px 18px -10px rgb(0 0 0 / 0.32);
+  --panel-elevacion-1:
+    0 1px 2px rgb(16 40 63 / 0.04),
+    0 2px 4px -2px rgb(16 40 63 / 0.06);
+  --panel-elevacion-2:
+    0 1px 3px rgb(16 40 63 / 0.04),
+    0 6px 16px -8px rgb(16 40 63 / 0.10),
+    0 16px 32px -24px rgb(16 40 63 / 0.12);
+  --panel-elevacion-3:
+    0 2px 6px rgb(16 40 63 / 0.06),
+    0 12px 28px -12px rgb(16 40 63 / 0.18),
+    0 28px 56px -28px rgb(16 40 63 / 0.18);
+  --shadow-panel: var(--panel-elevacion-2);
+  --shadow-flotante: var(--panel-elevacion-3);
+  --tarjeta-radio: var(--panel-radio-superficie);
+  --tarjeta-borde: var(--panel-hairline);
+  --tarjeta-sombra-original: 0 0 #0000;
+  --tarjeta-sombra: var(--panel-elevacion-2);
+  --tarjeta-sombra-hover: var(--panel-elevacion-3);
+  --tarjeta-transformar-hover: none;
+  --panel-suave-radio: var(--panel-radio-superficie);
+  --panel-suave-sombra: inset 0 1px 0 rgb(255 255 255 / 0.8);
+  --campo-radio: var(--panel-radio-control);
+  --campo-borde: #c8d3de;
+  --campo-borde-hover: #93a9bc;
+  --campo-borde-foco: var(--color-turquesa-700);
+  --campo-sombra: inset 0 1px 2px rgb(16 40 63 / 0.035);
+  --campo-foco-aro: #fff;
+  --campo-foco-outline: 2px solid var(--panel-foco-color);
+  --campo-foco-offset: 2px;
+  --rotulo-color: var(--color-marca-900);
+  --titulo-seccion-color: #526578;
+  --titulo-seccion-peso: 600;
+  --titulo-seccion-tracking: 0.09em;
+  --insignia-peso: 600;
+  --insignia-sombra: inset 0 1px 0 rgb(255 255 255 / 0.65);
+  --fila-fondo-hover: rgb(238 247 252 / 0.65);
+  --progreso-fondo: #e3ebf0;
+  --progreso-sombra: inset 0 1px 2px rgb(16 40 63 / 0.07);
+  --progreso-relleno: linear-gradient(90deg, var(--color-turquesa-700), var(--color-turquesa-500));
+  --progreso-brillo: inset 0 1px 0 rgb(255 255 255 / 0.2);
+
+  /* Iconos sueltos y presión por luz, sin saltos. Las flechas size-9 y los
+     botones w-full/flex-1 siguen midiendo lo que pide cada pantalla. */
+  --capsula-alto: 44px;
+  --capsula-hueco: 8px;
+  --capsula-relleno-y: 7px;
+  --capsula-relleno-x: 15px;
+  --capsula-radio: var(--panel-radio-control);
+  --capsula-letra: 14px;
+  --capsula-peso: 600;
+  --capsula-elevar: 0px;
+  --capsula-escala-activa: 1;
+  --capsula-fondo-imagen: linear-gradient(180deg, rgb(255 255 255 / 0.07), transparent 80%);
+  --capsula-sombra:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 1px 2px rgb(16 40 63 / 0.16), 0 4px 8px -4px rgb(16 40 63 / 0.28);
+  --capsula-sombra-hover:
+    inset 0 1px 0 rgb(255 255 255 / 0.24),
+    0 1px 2px rgb(16 40 63 / 0.18), 0 5px 10px -4px rgb(16 40 63 / 0.32);
+  --capsula-sombra-activa:
+    inset 0 2px 4px rgb(16 40 63 / 0.22), inset 0 0 0 1px rgb(16 40 63 / 0.06);
+  --capsula-presion-fantasma: inset 0 1px 3px rgb(16 40 63 / 0.12);
+  --capsula-borde-primaria: var(--color-marca-900);
+  --capsula-borde-primaria-hover: var(--color-marca-900);
+  --capsula-fondo-primaria: var(--color-marca-800);
+  --capsula-fondo-primaria-hover: #1b4d76;
+  --capsula-sombra-primaria: var(--capsula-sombra);
+  --capsula-sombra-primaria-hover: var(--capsula-sombra-hover);
+  /* El coral profundo conserva AA con blanco, aun con el brillo del degradado. */
+  --capsula-borde-urgente: #87332d;
+  --capsula-fondo-urgente: #a63d35;
+  --capsula-fondo-urgente-hover: #b3473e;
+  --capsula-sombra-urgente:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 1px 2px rgb(135 51 45 / 0.16), 0 4px 8px -4px rgb(135 51 45 / 0.28);
+  --capsula-borde-exito: #064e3b;
+  --capsula-fondo-exito: #06654f;
+  --capsula-fondo-exito-hover: #08755b;
+  --capsula-borde-peligro: #881337;
+  --capsula-fondo-peligro: #a51c46;
+  --capsula-fondo-peligro-hover: #b32250;
+  --capsula-borde-posponer: #4c258b;
+  --capsula-fondo-posponer: #6232b2;
+  --capsula-fondo-posponer-hover: #6e3cbd;
+  --capsula-borde-normal: var(--panel-hairline);
+  --capsula-borde-normal-hover: #a6bdcf;
+  --capsula-fondo-normal-hover: #f5f9fc;
+  --capsula-imagen-normal: linear-gradient(180deg, #fff, #fafbfd);
+  --capsula-imagen-normal-hover: linear-gradient(180deg, #fff, #f0f6fa);
+  --capsula-sombra-normal: inset 0 1px 0 #fff, var(--panel-elevacion-1);
+  --capsula-sombra-normal-hover: inset 0 1px 0 #fff, var(--panel-elevacion-2);
+  --capsula-fondo-fantasma-hover: rgb(22 63 99 / 0.055);
+  --capsula-borde-deshabilitado: #dce3ea;
+  --capsula-fondo-deshabilitado: #f0f3f6;
+  --capsula-color-deshabilitado: #64748b;
+  --capsula-xl-radio: 12px;
+  --capsula-xl-relleno-y: 11px;
+  --capsula-xl-relleno-x: 19px;
+  --capsula-xl-letra: 16px;
+  --capsula-sm-alto: 36px;
+  --capsula-sm-hueco: 6px;
+  --capsula-sm-relleno-y: 5px;
+  --capsula-sm-relleno-x: 11px;
+  --capsula-sm-radio: var(--panel-radio-compacto);
+  --capsula-sm-letra: 13px;
+  --chip-tam: auto;
+  --chip-tam-sm: auto;
+  --chip-radio: 0;
+  --chip-radio-sm: 0;
+  --chip-tam-xl: auto;
+  --chip-radio-xl: 0;
+  --chip-fondo: transparent;
+  --chip-fondo-normal: transparent;
+  --chip-color-normal: var(--color-marca-700);
+}
+
+.panel-navegacion {
+  background: var(--navegacion-fondo,
+    radial-gradient(circle at 90% 8%, rgb(88 173 217 / 0.16), transparent 30%),
+    linear-gradient(160deg, #10283f 0%, #14344e 46%, #0b1e31 100%));
+}
+
+.placa-logo {
+  background: var(--logo-fondo, rgb(255 255 255 / 0.96));
+  box-shadow: var(--logo-sombra, 0 18px 36px -28px rgb(0 0 0 / 0.65));
+}
+
+/* La decoración de navegación va en components: una utilidad local puede
+   cambiarla. El relleno activo pertenece al indicador de Motion, no al enlace. */
+@layer components {
+  .panel-shell {
+    background:
+      radial-gradient(ellipse at 12% 0%, rgb(36 125 187 / 0.045), transparent 55%),
+      radial-gradient(ellipse at 100% 15%, rgb(20 159 158 / 0.035), transparent 45%), #f4f7fa;
+  }
+
+  .panel-shell .panel-navegacion {
+    --panel-foco-separacion: var(--color-marca-950);
+    --panel-foco-color: var(--color-turquesa-200);
+    --capsula-fondo-fantasma-hover: rgb(255 255 255 / 0.08);
+    box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.09), 0 6px 16px -12px rgb(16 40 63 / 0.3);
+  }
+
+  .panel-shell .placa-logo {
+    border: 1px solid rgb(255 255 255 / 0.85);
+  }
+
+  .panel-pestanas {
+    padding: 4px;
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: 16px;
+    background-color: rgb(0 0 0 / 0.08);
+  }
+
+  .panel-pestana:hover:not([aria-current="page"]) {
+    background-color: rgb(255 255 255 / 0.07);
+  }
+
+  .panel-indicador {
+    border: 1px solid rgb(162 235 231 / 0.24);
+    background: linear-gradient(100deg, rgb(104 217 213 / 0.12), rgb(255 255 255 / 0.055));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.10), 0 2px 4px rgb(0 0 0 / 0.08);
+  }
+
+  .panel-indicador::before {
+    content: "";
+    position: absolute;
+    right: 12px;
+    bottom: 0;
+    left: 12px;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--color-turquesa-300);
+    box-shadow: 0 0 8px rgb(104 217 213 / 0.2);
+  }
+
+  /* En la computadora la navegación es la barra lateral: la orilla va a la
+     derecha y la línea del activo, a la izquierda de cada destino. */
+  @media (min-width: 1024px) {
+    .panel-shell .panel-navegacion {
+      box-shadow: inset -1px 0 0 rgb(255 255 255 / 0.09), 6px 0 16px -12px rgb(16 40 63 / 0.3);
+    }
+
+    .panel-indicador::before {
+      top: 10px;
+      right: auto;
+      bottom: 10px;
+      left: 0;
+      width: 3px;
+      height: auto;
+    }
+  }
+
+  .panel-shell .panel-contenido > header {
+    border-color: var(--panel-hairline);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.65);
+  }
+
+  /* Dos tonos: separación blanca y aro oscuro; en navegación se invierten.
+     Los controles con sombra propia componen este separador con su elevación. */
+  .panel-shell :focus-visible {
+    outline: 2px solid var(--panel-foco-color);
+    outline-offset: 2px;
+    --tw-ring-offset-shadow: 0 0 0 2px var(--panel-foco-separacion);
+    box-shadow: 0 0 0 2px var(--panel-foco-separacion);
+  }
+
+  /* Resolver los aros en la propia tarjeta conserva sus colores de estado;
+     fuera del panel se mantiene la sombra original, incluso junto a ring-*. */
+  .panel-shell .tarjeta-viva {
+    --tarjeta-sombra-hover-compuesta:
+      var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000),
+      var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+      var(--tarjeta-sombra-hover);
+  }
+
+  /* Un enlace de tarjeta y una fila de tabla comparten el mismo realce.
+     Los estilos locales de hover siguen ganando por estar en utilities. */
+  .panel-shell a.tarjeta,
+  .panel-shell .tabla-panel tbody tr {
+    transition:
+      background-color var(--duracion-corta) var(--ease-producto),
+      border-color var(--duracion-corta) var(--ease-producto),
+      box-shadow var(--duracion-corta) var(--ease-producto);
+  }
+
+  @media (hover: hover) {
+    .panel-shell a.tarjeta:hover {
+      --tarjeta-sombra: var(--panel-elevacion-3);
+    }
+
+    .panel-shell .tabla-panel tbody tr:hover {
+      background-color: var(--fila-fondo-hover);
+    }
+  }
+
+  .panel-shell .campo:disabled {
+    --campo-borde: var(--panel-hairline);
+    --campo-borde-hover: var(--panel-hairline);
+    --campo-sombra: 0 0 #0000;
+  }
+
+  /* Mientras se envía, el botón conserva su pigmento aunque esté disabled.
+     Solo se cambian variables: las utilidades de cada botón siguen ganando. */
+  .panel-shell .capsula[aria-busy="true"] {
+    --capsula-borde-deshabilitado: var(--capsula-borde-normal);
+    --capsula-fondo-deshabilitado: #fff;
+    --capsula-color-deshabilitado: var(--color-marca-900);
+    --capsula-sombra-deshabilitada: inset 0 1px 3px rgb(16 40 63 / 0.16);
+  }
+
+  .panel-shell .capsula-primaria[aria-busy="true"] {
+    --capsula-borde-deshabilitado: var(--capsula-borde-primaria);
+    --capsula-fondo-deshabilitado: var(--capsula-fondo-primaria);
+    --capsula-color-deshabilitado: #fff;
+    --capsula-imagen-deshabilitada: var(--capsula-fondo-imagen);
+  }
+
+  .panel-shell .capsula-urgente[aria-busy="true"] {
+    --capsula-borde-deshabilitado: var(--capsula-borde-urgente);
+    --capsula-fondo-deshabilitado: var(--capsula-fondo-urgente);
+    --capsula-color-deshabilitado: #fff;
+    --capsula-imagen-deshabilitada: var(--capsula-fondo-imagen);
+  }
+
+  .panel-shell .capsula-exito[aria-busy="true"] {
+    --capsula-borde-deshabilitado: var(--capsula-borde-exito);
+    --capsula-fondo-deshabilitado: var(--capsula-fondo-exito);
+    --capsula-color-deshabilitado: #fff;
+    --capsula-imagen-deshabilitada: var(--capsula-fondo-imagen);
+  }
+
+  .panel-shell .capsula-peligro[aria-busy="true"] {
+    --capsula-borde-deshabilitado: var(--capsula-borde-peligro);
+    --capsula-fondo-deshabilitado: var(--capsula-fondo-peligro);
+    --capsula-color-deshabilitado: #fff;
+    --capsula-imagen-deshabilitada: var(--capsula-fondo-imagen);
+  }
+
+  .panel-shell .capsula-posponer[aria-busy="true"] {
+    --capsula-borde-deshabilitado: var(--capsula-borde-posponer);
+    --capsula-fondo-deshabilitado: var(--capsula-fondo-posponer);
+    --capsula-color-deshabilitado: #fff;
+    --capsula-imagen-deshabilitada: var(--capsula-fondo-imagen);
+  }
+}
+
+.panel-contenido {
+  min-width: 0;
+}
+
+.barra-progreso {
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--progreso-fondo, #e4eaee);
+  box-shadow: var(--progreso-sombra, none);
+}
+
+.barra-progreso > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--progreso-relleno, linear-gradient(90deg, var(--color-turquesa-500), #66ca98));
+  box-shadow: var(--progreso-brillo, none);
+}
+
+.mapa-esqueleto {
+  background:
+    linear-gradient(115deg, transparent 0 38%, rgb(255 255 255 / 0.65) 50%, transparent 62%)
+      0 0 / 220% 100%,
+    #edf2f4;
+  animation: mapa-cargando 1.4s ease-in-out infinite;
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Evita que un notch lateral cubra controles al usar la PWA en landscape. */
+.safe-inline-compact {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+.safe-inline-navigation {
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+}
+
+.safe-inline-panel {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+@media (min-width: 640px) {
+  .safe-inline-panel {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+}
+
+@media (min-width: 1024px) {
+  .safe-inline-navigation {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: 1rem;
+  }
+
+  .safe-inline-panel {
+    padding-left: max(2rem, env(safe-area-inset-left));
+    padding-right: max(2rem, env(safe-area-inset-right));
+  }
+}
+
+/* Movimiento ------------------------------------------------------------- */
+@keyframes onda {
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes giro {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes trazo {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes subir {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+}
+
+@keyframes barra {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes entrada-panel {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+}
+
+/* La confirmación de entrega: aparece de golpe pero no salta. */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes mapa-cargando {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
+@media (max-width: 639px) {
+  /* Las flechas size-9 conservan su ancho; min-height les da 44px de tacto.
+     Se cambia la variable solo en oficina para no alterar la app del chofer. */
+  .panel-shell {
+    --capsula-alto: 48px;
+    --capsula-sm-alto: 44px;
+  }
+
+  .panel-contenido {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .capsula:not(.capsula-sm) {
+    min-height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .capsula,
+  .tarjeta,
+  .campo {
+    border: 1px solid CanvasText;
+  }
+
+  @layer components {
+    /* En alto contraste los pigmentos desaparecen: se usan colores del sistema.
+       Los !important aquí son deliberados y se limitan a esta preferencia. */
+    .panel-shell,
+    .panel-shell :is(.panel-navegacion, .placa-logo, .panel-pestanas, .capsula-chip, .barra-progreso, .barra-progreso > span) {
+      background-image: none !important;
+      box-shadow: none !important;
+    }
+
+    .panel-shell :is(.capsula, .tarjeta, .tarjeta-viva, .panel-suave, .campo, .insignia) {
+      border-color: CanvasText !important;
+      background-image: none !important;
+      box-shadow: none !important;
+    }
+
+    .panel-shell .insignia {
+      border: 1px solid CanvasText;
+    }
+
+    .panel-shell .capsula {
+      background-color: ButtonFace !important;
+      color: ButtonText !important;
+    }
+
+    .panel-shell .capsula:is(:disabled, [aria-disabled="true"]):not([aria-busy="true"]) {
+      color: GrayText !important;
+      border-color: GrayText !important;
+    }
+
+    .panel-shell .panel-indicador {
+      border: 1px solid Highlight;
+      background-image: none;
+      box-shadow: none;
+    }
+
+    .panel-shell .panel-indicador::before {
+      background: Highlight;
+      box-shadow: none;
+    }
+
+    /* La opción elegida no depende de un fondo blanco o de una sombra. */
+    .panel-shell label:has(input[name="orden-al-crear"]:checked) {
+      outline: 2px solid Highlight;
+      outline-offset: -2px;
+    }
+
+    .panel-shell :focus-visible,
+    .panel-shell .campo:focus,
+    .panel-shell label:has(input[name="orden-al-crear"]:focus-visible) {
+      outline: 2px solid Highlight !important;
+      box-shadow: none !important;
+    }
+  }
+}
