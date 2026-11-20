@@ -178,7 +178,7 @@ export function TarjetaProduccion({ fuente, lectura }: { fuente: Fuente; lectura
                   <span className="size-3 flex-none rounded-full ring-2 ring-white/30" style={{ backgroundColor: curso.color }} aria-hidden />
                   <p className="min-w-0 flex-1 truncate font-bold">
                     Pedido {curso.numero} · {curso.marca}
-                    {curso.folio ? <span className="font-medium text-marca-100"> · {curso.folio}</span> : null}
+                    {curso.folio ? <span className="font-medium text-marca-100"> · OC {curso.folio}</span> : null}
                   </p>
                   {curso.urgente ? <Etiqueta tono="mal">Urgente</Etiqueta> : null}
                 </div>
